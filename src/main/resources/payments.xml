@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<PAYMENTS xmlns="http://www.w3schools.com/RedsDevils"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3schools.com/RedsDevils payments.xsd">
+
+	<payment>
+
+		<physical_payer>
+			<bank_account>23454613523572359010</bank_account>
+			<name>Игорь</name>
+			<surname>Ежов</surname>
+			<patronymic>Владимирович</patronymic>
+			<passport_series>5704</passport_series>
+			<passport_number>465098</passport_number>
+			<phone>89121904990</phone>
+		</physical_payer>
+
+		<physical_recipient>
+			<bank_account>56454612357235901045</bank_account>
+			<name>Олег</name>
+			<surname>Шашков</surname>
+			<patronymic>Михайлович</patronymic>
+			<passport_series>5522</passport_series>
+			<passport_number>032598</passport_number>
+			<phone>89124127787</phone>
+		</physical_recipient>
+
+		<details>
+			<bank_BIC>045773603</bank_BIC>
+			<bank_name>SBERBANK</bank_name>
+			<total>2500.50</total>
+			<date_of_payment>2014-09-29</date_of_payment>
+			<date_of_execution>2014-10-01</date_of_execution>
+			<payment_code>003875234863945</payment_code>
+		</details>
+
+	</payment>
+
+	<payment>
+
+		<physical_payer>
+			<bank_account>23454613523572359010</bank_account>
+			<name>Алексей</name>
+			<surname>Пупкин</surname>
+			<patronymic>Сергеевич</patronymic>
+			<passport_series>5404</passport_series>
+			<passport_number>412098</passport_number>
+			<phone>89121988990</phone>
+		</physical_payer>
+
+		<legal_recipient>
+			<bank_account>56454612355981904444</bank_account>
+			<TIN>867592757638</TIN>
+			<company_name>Uncle Tony</company_name>
+			<company_address>20 Broadwick Street, London, UK‎</company_address>
+		</legal_recipient>
+
+		<details>
+			<bank_BIC>045773603</bank_BIC>
+			<bank_name>SBERBANK</bank_name>
+			<total>2500.50</total>
+			<date_of_payment>2014-09-30</date_of_payment>
+			<date_of_execution>2014-10-05</date_of_execution>
+			<payment_code>003875234863945</payment_code>
+		</details>
+
+	</payment>
+
+</PAYMENTS>

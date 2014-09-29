@@ -1,0 +1,62 @@
+<xs:schema targetNamespace="http://www.w3schools.com/RedsDevils"
+	elementFormDefault="qualified" xmlns="http://www.w3schools.com/RedsDevils"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<!-- root element -->
+	<xs:element name="PAYMENTS" type="Payments" />
+
+	<!-- root complex type -->
+	<xs:complexType name="Payments">
+		<xs:sequence minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="payment" type="Payment" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Payment complex type -->
+	<xs:complexType name="Payment">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="physical_payer" type="Physical" />
+			<xs:element minOccurs="0" name="physical_recipient" type="Physical" />
+			<xs:element minOccurs="0" name="legal_payer" type="Legal" />
+			<xs:element minOccurs="0" name="legal_recipient" type="Legal" />
+			<xs:element minOccurs="0" name="details" type="Details" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Physical complex type -->
+	<xs:complexType name="Physical">
+		<xs:sequence>
+			<xs:element name="bank_account" type="xs:string" />
+			<xs:element name="name" type="xs:string" />
+			<xs:element name="surname" type="xs:string" />
+			<xs:element name="patronymic" type="xs:string" />
+			<xs:element name="passport_series" type="xs:string" />
+			<xs:element name="passport_number" type="xs:string" />
+			<xs:element name="phone" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Legal complex type -->
+	<xs:complexType name="Legal">
+		<xs:sequence>
+			<xs:element name="bank_account" type="xs:string" />
+			<xs:element name="TIN" type="xs:string" />
+			<xs:element name="company_name" type="xs:string" />
+			<xs:element name="company_address" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- details complex type -->
+	<xs:complexType name="Details">
+		<xs:sequence>
+			<xs:element name="bank_BIC" type="xs:string" />
+			<xs:element name="bank_name" type="xs:string" />
+			<xs:element name="total" type="xs:decimal" />
+			<xs:element name="date_of_payment" type="xs:date" />
+			<xs:element name="date_of_execution" type="xs:date" />
+			<xs:element name="payment_code" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+
+</xs:schema>
