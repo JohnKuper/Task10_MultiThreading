@@ -94,11 +94,6 @@ public class WatchDir {
 			boolean valid = key.reset();
 			if (!valid) {
 				keys.remove(key);
-
-				// all directories are inaccessible
-				if (keys.isEmpty()) {
-					break;
-				}
 			}
 		}
 	}

@@ -6,26 +6,15 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Legal", propOrder = { "bankAccount", "tin", "companyName",
-		"companyAddress" })
-public class Legal {
+@XmlType(name = "Legal", propOrder = { "tin", "companyName", "companyAddress" })
+public class Legal extends Person {
 
-	@XmlElement(name = "bank_account", required = true)
-	protected String bankAccount;
 	@XmlElement(name = "TIN", required = true)
 	protected String tin;
 	@XmlElement(name = "company_name", required = true)
 	protected String companyName;
 	@XmlElement(name = "company_address", required = true)
 	protected String companyAddress;
-
-	public String getBankAccount() {
-		return bankAccount;
-	}
-
-	public void setBankAccount(String value) {
-		this.bankAccount = value;
-	}
 
 	public String getTIN() {
 		return tin;

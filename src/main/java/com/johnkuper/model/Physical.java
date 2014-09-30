@@ -6,12 +6,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Physical", propOrder = { "bankAccount", "name", "surname",
+@XmlType(name = "Physical", propOrder = {"name", "surname",
 		"patronymic", "passportSeries", "passportNumber", "phone" })
-public class Physical {
+public class Physical extends Person {
 
-	@XmlElement(name = "bank_account", required = true)
-	protected String bankAccount;
 	@XmlElement(required = true)
 	protected String name;
 	@XmlElement(required = true)
@@ -24,14 +22,7 @@ public class Physical {
 	protected String passportNumber;
 	@XmlElement(required = true)
 	protected String phone;
-
-	public String getBankAccount() {
-		return bankAccount;
-	}
-
-	public void setBankAccount(String value) {
-		this.bankAccount = value;
-	}
+	
 
 	public String getName() {
 		return name;

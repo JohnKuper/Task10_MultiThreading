@@ -1,19 +1,17 @@
 package com.johnkuper.main;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import javax.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.johnkuper.dbconnect.ConnectionHelper;
-import com.johnkuper.watcher.WatchDir;
+import com.johnkuper.dbconnect.ConnectionProvider;
+import com.johnkuper.parser.PaymentParser;
 
 public class Main {
 
 	final static Logger logger = LoggerFactory.getLogger("JohnKuper");
-	private static ConnectionHelper conHelper = new ConnectionHelper();
+	private static ConnectionProvider conHelper = new ConnectionProvider();
 
 	public static void main(String[] args) {
 
@@ -31,10 +29,21 @@ public class Main {
 		 * { }
 		 */
 
-		Path dir = Paths.get("src/main/resources");
+		/*
+		 * Path dir = Paths.get("src/main/resources"); try { new
+		 * WatchDir(dir).processEvents(); } catch (IOException e) {
+		 * e.printStackTrace(); }
+		 */
+
+		/*
+		 * Payments payments = jaxb.getPayments(); jaxb.objectToXML(payments);
+		 */
+		PaymentParser parser;
 		try {
-			new WatchDir(dir).processEvents();
-		} catch (IOException e) {
+			parser = new PaymentParser();
+			parser.run();
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
