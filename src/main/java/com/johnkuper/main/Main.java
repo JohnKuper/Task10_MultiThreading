@@ -1,17 +1,16 @@
 package com.johnkuper.main;
 
-import javax.xml.bind.JAXBException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.johnkuper.dbconnect.ConnectionProvider;
-import com.johnkuper.parser.PaymentParser;
+import com.johnkuper.manager.ThreadsManager;
 
 public class Main {
 
 	final static Logger logger = LoggerFactory.getLogger("JohnKuper");
 	private static ConnectionProvider conHelper = new ConnectionProvider();
+	private static ThreadsManager thrManager = new ThreadsManager();
 
 	public static void main(String[] args) {
 
@@ -30,22 +29,16 @@ public class Main {
 		 */
 
 		/*
-		 * Path dir = Paths.get("src/main/resources"); try { new
-		 * WatchDir(dir).processEvents(); } catch (IOException e) {
-		 * e.printStackTrace(); }
-		 */
-
-		/*
 		 * Payments payments = jaxb.getPayments(); jaxb.objectToXML(payments);
 		 */
-		PaymentParser parser;
-		try {
-			parser = new PaymentParser();
-			parser.run();
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		/*
+		 * PaymentParser parser; try { parser = new PaymentParser();
+		 * parser.run(); } catch (JAXBException e) { // TODO Auto-generated
+		 * catch block e.printStackTrace(); }
+		 */
+		
+		thrManager.runWatcher();
 
 	}
+
 }
