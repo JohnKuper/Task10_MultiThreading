@@ -28,14 +28,13 @@ public class Details {
 	protected XMLGregorianCalendar dateOfExecution;
 	@XmlElement(name = "payment_code", required = true)
 	protected String paymentCode;
-	
+
 	public String toString() {
-		return String.format("Details INFO : bank_BIC = " + bankBIC +
-				"; bank_name = " + bankName +
-				"; total = " + total +
-				"; date_of_payment = " + dateOfPayment +
-				"; date_of_execution = " + dateOfExecution +
-				"; payment_code = " + paymentCode + "%n");
+		return String.format("Details INFO : bank_BIC = " + bankBIC
+				+ "; bank_name = " + bankName + "; total = " + total
+				+ "; date_of_payment = " + dateOfPayment
+				+ "; date_of_execution = " + dateOfExecution
+				+ "; payment_code = " + paymentCode + "%n");
 	}
 
 	public String getBankBIC() {

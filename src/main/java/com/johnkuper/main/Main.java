@@ -3,14 +3,14 @@ package com.johnkuper.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.johnkuper.dbconnect.ConnectionProvider;
+import com.johnkuper.database.ConnectionProvider;
 import com.johnkuper.manager.ThreadsManager;
 
 public class Main {
 
 	final static Logger logger = LoggerFactory.getLogger("JohnKuper");
-	private static ConnectionProvider conHelper = new ConnectionProvider();
-	private static ThreadsManager thrManager = new ThreadsManager();
+	private static ConnectionProvider provider = new ConnectionProvider();
+	private static ThreadsManager thrManager = new ThreadsManager(provider);
 
 	public static void main(String[] args) {
 

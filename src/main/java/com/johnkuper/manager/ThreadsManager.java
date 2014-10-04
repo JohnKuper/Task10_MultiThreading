@@ -15,6 +15,8 @@ import javax.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.johnkuper.database.ConnectionProvider;
+import com.johnkuper.database.PaymentDBSaver;
 import com.johnkuper.model.Payment;
 import com.johnkuper.parser.PaymentParser;
 import com.johnkuper.remover.FileRemover;
@@ -28,6 +30,11 @@ public class ThreadsManager {
 	private Storage<Payment> paymentStorage = new Storage<>(1000000);
 	private Storage<Future<Path>> deletePathStorage = new Storage<>(1000000);
 	private ExecutorService executor = Executors.newFixedThreadPool(100);
+	private ConnectionProvider provider;
+
+	public ThreadsManager(ConnectionProvider provider) {
+		this.provider = provider;
+	}
 
 	private void runWatcher() {
 		logger.debug("Start 'runWatcher'");
@@ -48,11 +55,19 @@ public class ThreadsManager {
 
 	public void startAllTasks() {
 		runWatcher();
-		// runDeleteTask();
 		runFileRemover();
+		runSaver();
 		// startFileDeletingTask(deletePathStorage);
 		runParser();
 
+	}
+
+	private void runSaver() {
+		logger.debug("Start 'runSaver'");
+		int x;
+		for (x = 0; x < 20; x++) {
+			executor.submit(new PaymentDBSaver(paymentStorage, provider));
+		}
 	}
 
 	private void runFileRemover() {

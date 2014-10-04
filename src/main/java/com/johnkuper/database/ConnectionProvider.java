@@ -1,4 +1,4 @@
-package com.johnkuper.dbconnect;
+package com.johnkuper.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,7 +19,7 @@ public class ConnectionProvider {
 			Class.forName(driverName);
 
 			String serverName = "localhost";
-			String mydatabase = "payments";
+			String mydatabase = "DBpayments";
 			String url = "jdbc:mysql://" + serverName + "/" + mydatabase;
 
 			String username = "root";
