@@ -1,5 +1,7 @@
 package com.johnkuper.parser;
 
+import java.io.FileInputStream;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -8,35 +10,47 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
-import javax.xml.transform.stream.StreamSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.johnkuper.model.Payment;
+import com.johnkuper.storage.Storage;
 
 public class PaymentParser implements Runnable {
 
-	private static final String SOURCE_XML = "src/main/resources/payments.xml";
 	private final static Logger logger = LoggerFactory.getLogger("JohnKuper");
 	private JAXBContext jaxbcontext;
 	private Unmarshaller unmarshaller;
+	private FileInputStream stream;
+	private Storage<Payment> paymentStorage;
 
-	public PaymentParser() throws JAXBException {
+	public PaymentParser(FileInputStream stream, Storage<Payment> storage)
+			throws JAXBException {
 		this.jaxbcontext = JAXBContext.newInstance(Payment.class);
 		this.unmarshaller = jaxbcontext.createUnmarshaller();
+		this.stream = stream;
+		this.paymentStorage = storage;
 
 	}
 
 	public void run() {
-		logger.debug("Start parsing");
-		parse();
+		logger.debug("Start 'PaymentParser' thread");
+		try {
+			parse();
+		} catch (XMLStreamException e) {
+			String msg = ("Error during parsing XML");
+			logger.error(msg, e);
+		} catch (InterruptedException e) {
+			String msg = ("'PaymentParser' thread was interrupted");
+			logger.error(msg, e);
+		}
+
 	}
 
-	public void parse() {
+	public void parse() throws XMLStreamException, InterruptedException {
 
 		XMLInputFactory xif = XMLInputFactory.newFactory();
-		StreamSource stream = new StreamSource(SOURCE_XML);
 		XMLEventReader xmlreader = null;
 
 		try {
@@ -48,6 +62,7 @@ public class PaymentParser implements Runnable {
 						&& event.asStartElement().getName().getLocalPart()
 								.equals("payment")) {
 					Payment payment = getPayment(xmlreader);
+					paymentStorage.put(payment);
 					logger.debug(payment.getPayer().toString());
 					logger.debug(payment.getRecipient().toString());
 					logger.debug(payment.getDetails().toString());
@@ -55,9 +70,12 @@ public class PaymentParser implements Runnable {
 					xmlreader.nextEvent();
 				}
 			}
-		} catch (XMLStreamException e) {
-			String msg = ("Error during parsing XML");
-			logger.error(msg, e);
+		}
+
+		finally {
+			if (xmlreader != null) {
+				xmlreader.close();
+			}
 		}
 
 	}

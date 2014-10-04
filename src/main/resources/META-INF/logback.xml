@@ -16,7 +16,7 @@
 		</encoder>
 	</appender>
 	
-	<logger name="JohnKuper" level="debug">
+	<logger name="JohnKuper" level="error">
 		<appender-ref ref="FILE" />
 		<appender-ref ref="STDOUT" />
 	</logger>

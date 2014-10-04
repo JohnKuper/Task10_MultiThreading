@@ -36,8 +36,8 @@ public class Main {
 		 * parser.run(); } catch (JAXBException e) { // TODO Auto-generated
 		 * catch block e.printStackTrace(); }
 		 */
-		
-		thrManager.runWatcher();
+
+		thrManager.startAllTasks();
 
 	}
 

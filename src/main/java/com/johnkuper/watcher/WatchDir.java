@@ -1,14 +1,12 @@
 package com.johnkuper.watcher;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
-import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
@@ -34,18 +32,17 @@ public class WatchDir implements Runnable {
 
 	@Override
 	public void run() {
+		logger.debug("Start 'WatchDir' thread");
 
 		processEvents();
 
 	}
-	
-	// http://www.codejava.net/java-se/file-io/file-change-notification-example-with-watch-service-api
-	// сделать по этому примеру.
+
 	/**
 	 * Register the given directory with the WatchService
 	 */
 	private void register(Path dir) throws IOException {
-		WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE);
+		WatchKey key = dir.register(watcher, ENTRY_CREATE);
 		if (trace) {
 			Path prev = keys.get(key);
 			if (prev == null) {
@@ -75,15 +72,14 @@ public class WatchDir implements Runnable {
 	 */
 	private void processEvents() {
 
-		for (;;) {
+		while (true) {
 
 			// wait for key to be signalled
 			WatchKey key;
 			try {
 				key = watcher.take();
 			} catch (InterruptedException x) {
-				long threadId = Thread.currentThread().getId();
-				logger.debug("Thread {} was interrupted!", threadId);
+				logger.debug("'WatchDir' thread was interrupted!");
 				return;
 			}
 
@@ -94,7 +90,7 @@ public class WatchDir implements Runnable {
 			}
 
 			for (WatchEvent<?> event : key.pollEvents()) {
-				Kind<?> kind = event.kind();
+				WatchEvent.Kind<?> kind = event.kind();
 
 				if (kind == OVERFLOW) {
 					continue;
@@ -103,10 +99,13 @@ public class WatchDir implements Runnable {
 				// Context for directory entry event is the file name of entry
 				WatchEvent<Path> ev = cast(event);
 				Path name = ev.context();
-				Path child = dir.resolve(name);
-				putPathToStorage(child);
-				checkPathStorage(pathStorage);
-				// System.out.format("%s: %s\n", event.kind().name(), child);
+				Path fullpath = dir.resolve(name);
+				if (kind == ENTRY_CREATE) {
+					putPathToStorage(fullpath);
+					logger.debug("Fullpath '{}' add in pathStorage", fullpath);
+					// checkPathStorage(pathStorage);
+					System.out.format("%s: %s\n", event.kind().name(), name);
+				}
 
 			}
 
