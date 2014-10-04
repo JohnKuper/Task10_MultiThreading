@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS DBpayments;
 create database if not exists DBpayments;
 
 use DBpayments;

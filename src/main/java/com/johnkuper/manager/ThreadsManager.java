@@ -29,7 +29,7 @@ public class ThreadsManager {
 	private Storage<Path> pathStorage = new Storage<>(1000000);
 	private Storage<Payment> paymentStorage = new Storage<>(1000000);
 	private Storage<Future<Path>> deletePathStorage = new Storage<>(1000000);
-	private ExecutorService executor = Executors.newFixedThreadPool(100);
+	private ExecutorService executor = Executors.newCachedThreadPool();
 	private ConnectionProvider provider;
 
 	public ThreadsManager(ConnectionProvider provider) {
