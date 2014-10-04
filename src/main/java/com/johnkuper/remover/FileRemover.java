@@ -24,20 +24,14 @@ public class FileRemover implements Runnable {
 	@Override
 	public void run() {
 		logger.debug("Start 'FileRemover' thread");
-		try {
-			deleteTask();
-		} catch (InterruptedException e) {
-			String msg = "'FileRemover' thread was interrupted";
-			logger.error(msg, e);
-
-		}
+		deleteTask();
 	}
 
-	private void deleteTask() throws InterruptedException {
-		Future<Path> path = deletePathStorage.get();
+	private void deleteTask() {
+
 		while (true) {
 			try {
-
+				Future<Path> path = deletePathStorage.get();
 				if (path.isDone()) {
 					Files.deleteIfExists(path.get());
 					logger.debug("File '{}' was deleted", path.get());
@@ -49,8 +43,8 @@ public class FileRemover implements Runnable {
 				}
 
 			} catch (IOException e) {
-				deletePathStorage.put(path);
-				logger.debug("Error during 'deleteTask. Put file back into deletePathStorage {}",e);
+				String msg = "Error during 'deleteTask";
+				logger.error(msg, e);
 
 			} catch (InterruptedException e) {
 				String msg = "'FileRemover' thread was interrupted";

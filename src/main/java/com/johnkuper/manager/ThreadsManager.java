@@ -80,7 +80,11 @@ public class ThreadsManager {
 					deletePathStorage.put(fileForDelete);
 
 				} catch (FileNotFoundException e) {
-					logger.error("File not found", e);
+					logger.error(
+							"File '{}' not found or can't be read. Put it back to pathStorage",
+							e);
+					pathStorage.put(currentFile);
+
 				}
 			} catch (InterruptedException e) {
 				logger.debug("'ThreadsManager' thread was interrupted", e);
