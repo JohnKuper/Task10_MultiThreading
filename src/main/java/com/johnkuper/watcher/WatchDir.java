@@ -39,7 +39,7 @@ public class WatchDir implements Runnable {
 	}
 
 	/**
-	 * Register the given directory with the WatchService
+	 * Register the given directory with the WatchService 
 	 */
 	private void register(Path dir) throws IOException {
 		WatchKey key = dir.register(watcher, ENTRY_CREATE);
@@ -49,7 +49,7 @@ public class WatchDir implements Runnable {
 				logger.debug("Directory register for Watcher: {}\n", dir);
 			} else {
 				if (!dir.equals(prev)) {
-					System.out.format("update: %s -> %s\n", prev, dir);
+					logger.debug("update: {} -> {}\n", prev, dir);
 				}
 			}
 		}

@@ -16,7 +16,7 @@ public class Main {
 	public static void main(String[] args) {
 		
 		XMLGenerator generator = new XMLGenerator();
-		generator.generate(10, 10);
+		generator.generate(10, 50);
 
 		ComboPooledDataSourceProvider poolProvider = new ComboPooledDataSourceProvider();
 		ExecutorService executor = Executors.newCachedThreadPool();

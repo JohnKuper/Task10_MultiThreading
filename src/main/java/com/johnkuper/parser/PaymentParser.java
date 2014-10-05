@@ -48,7 +48,7 @@ public class PaymentParser implements Runnable {
 
 	}
 
-	private void parse() throws XMLStreamException, InterruptedException {
+	public void parse() throws XMLStreamException, InterruptedException {
 
 		XMLInputFactory xif = XMLInputFactory.newFactory();
 		XMLEventReader xmlreader = null;
@@ -63,6 +63,7 @@ public class PaymentParser implements Runnable {
 								.equals("payment")) {
 					Payment payment = getPayment(xmlreader);
 					paymentStorage.put(payment);
+					
 					/*
 					 * logger.debug(payment.getPayer().toString());
 					 * logger.debug(payment.getRecipient().toString());

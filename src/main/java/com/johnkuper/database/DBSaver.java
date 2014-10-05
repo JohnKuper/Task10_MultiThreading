@@ -68,19 +68,17 @@ public class DBSaver implements Runnable {
 		return sqlDt;
 	}
 
-	private String[] persistPayer(Payment payment) throws SQLException {
+	public String[] persistPayer(Payment payment) throws SQLException {
 
 		String[] arrayLastID = { null, null };
 		long lastPayerId;
 
 		if (payment.getPayer() instanceof PhysicalPayer) {
-			// logger.debug("It's PHYSICAL payer instance");
 			PhysicalPayer physPayer = (PhysicalPayer) payment.getPayer();
 			lastPayerId = persistPhysical(physPayer, "physical_payers");
 			arrayLastID[0] = String.valueOf(lastPayerId);
 			return arrayLastID;
 		} else if (payment.getPayer() instanceof LegalPayer) {
-			// logger.debug("It's LEGAL payer instance");
 			LegalPayer legalPayer = (LegalPayer) payment.getPayer();
 			lastPayerId = persistLegal(legalPayer, "legal_payers");
 			arrayLastID[1] = String.valueOf(lastPayerId);
@@ -91,13 +89,12 @@ public class DBSaver implements Runnable {
 
 	}
 
-	private String[] persistRecipient(Payment payment) throws SQLException {
+	public String[] persistRecipient(Payment payment) throws SQLException {
 
 		String[] arrayLastID = { null, null };
 		long lastRecipientId;
 
 		if (payment.getRecipient() instanceof PhysicalRecipient) {
-			// logger.debug("It's PHYSICAL recipient instance");
 			PhysicalRecipient physRecipient = (PhysicalRecipient) payment
 					.getRecipient();
 			lastRecipientId = persistPhysical(physRecipient,
@@ -105,7 +102,6 @@ public class DBSaver implements Runnable {
 			arrayLastID[0] = String.valueOf(lastRecipientId);
 			return arrayLastID;
 		} else if (payment.getRecipient() instanceof LegalRecipient) {
-			// logger.debug("It's LEGAL recipient instance");
 			LegalRecipient legalRecipient = (LegalRecipient) payment
 					.getRecipient();
 			lastRecipientId = persistLegal(legalRecipient, "legal_recipients");
