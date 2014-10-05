@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.xml.bind.JAXBException;
@@ -15,7 +14,7 @@ import javax.xml.bind.JAXBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.johnkuper.database.ConnectionProvider;
+import com.johnkuper.database.IConnectionProvider;
 import com.johnkuper.database.PaymentDBSaver;
 import com.johnkuper.model.Payment;
 import com.johnkuper.parser.PaymentParser;
@@ -26,26 +25,27 @@ import com.johnkuper.watcher.WatchDir;
 public class ThreadsManager {
 
 	final static Logger logger = LoggerFactory.getLogger("JohnKuper");
-	private Storage<Path> pathStorage = new Storage<>(1000000);
-	private Storage<Payment> paymentStorage = new Storage<>(1000000);
-	private Storage<Future<Path>> deletePathStorage = new Storage<>(1000000);
-	private ExecutorService executor = Executors.newCachedThreadPool();
-	private ConnectionProvider provider;
+	private static final String WATCHER_PATH = "src/main/resources/xml";
+	private static final Integer STORAGE_CAPACITY = 1000000;
+	private static final Integer SAVER_THREADS_AMOUNT = 10;
+	private Storage<Path> pathStorage = new Storage<>(STORAGE_CAPACITY);
+	private Storage<Payment> paymentStorage = new Storage<>(STORAGE_CAPACITY);
+	private Storage<Future<Path>> deletePathStorage = new Storage<>(
+			STORAGE_CAPACITY);
+	private ExecutorService executor;
+	private IConnectionProvider provider;
 
-	public ThreadsManager(ConnectionProvider provider) {
+	public ThreadsManager(IConnectionProvider provider, ExecutorService executor) {
 		this.provider = provider;
+		this.executor = executor;
 	}
 
 	private void runWatcher() {
 		logger.debug("Start 'runWatcher'");
 
-		Path dir = Paths.get("src/main/resources/xml");
+		Path dir = Paths.get(WATCHER_PATH);
 		try {
 			executor.execute(new WatchDir(dir, pathStorage));
-			/*
-			 * long threadid = Thread.currentThread().getId();
-			 * logger.debug("Thread's ID = {}", threadid);
-			 */
 		} catch (IOException e) {
 			String msg = "Error during 'runWatcher'";
 			logger.error(msg, e);
@@ -57,7 +57,6 @@ public class ThreadsManager {
 		runWatcher();
 		runFileRemover();
 		runSaver();
-		// startFileDeletingTask(deletePathStorage);
 		runParser();
 
 	}
@@ -65,7 +64,7 @@ public class ThreadsManager {
 	private void runSaver() {
 		logger.debug("Start 'runSaver'");
 		int x;
-		for (x = 0; x < 20; x++) {
+		for (x = 0; x < SAVER_THREADS_AMOUNT; x++) {
 			executor.submit(new PaymentDBSaver(paymentStorage, provider));
 		}
 	}
@@ -110,14 +109,5 @@ public class ThreadsManager {
 			}
 		}
 	}
-
-	/*
-	 * private void startFileDeletingTask(Storage<Future<Path>> taskStorage) {
-	 * executor.submit(() -> { while (true) { Future<Path> task =
-	 * taskStorage.get(); if (task.isDone()) {
-	 * logger.debug("Start new 'fileDeletingTask'");
-	 * logger.debug(String.format("Parsing %s complete", task.get()));
-	 * Files.deleteIfExists(task.get()); } else taskStorage.put(task); } }); }
-	 */
 
 }

@@ -128,12 +128,4 @@ public class WatchDir implements Runnable {
 		}
 	}
 
-	private void checkPathStorage(Storage<Path> storage) {
-		try {
-			for (Path path : storage.get()) {
-				logger.debug(path.toString());
-			}
-		} catch (InterruptedException e) {
-		}
-	}
 }

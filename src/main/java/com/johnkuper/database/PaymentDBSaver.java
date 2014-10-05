@@ -27,17 +27,18 @@ public class PaymentDBSaver implements Runnable {
 	final static Logger logger = LoggerFactory.getLogger("JohnKuper");
 
 	private Storage<Payment> paymentStorage;
-	private ConnectionProvider provider;
+	private IConnectionProvider provider;
+
+	public PaymentDBSaver(Storage<Payment> storage, IConnectionProvider provider) {
+		this.paymentStorage = storage;
+		this.provider = provider;
+		
+	}
 
 	@Override
 	public void run() {
-		logger.debug("DBSaver thread start");
+		logger.debug("Start 'DBSaver' thread");
 		persistAll();
-	}
-
-	public PaymentDBSaver(Storage<Payment> storage, ConnectionProvider provider) {
-		this.paymentStorage = storage;
-		this.provider = provider;
 	}
 
 	private java.sql.Date convertToSQLDate(XMLGregorianCalendar calendar) {
@@ -46,7 +47,8 @@ public class PaymentDBSaver implements Runnable {
 		return sqlDt;
 	}
 
-	private String[] persistPayer(Payment payment) throws SQLException {
+	private synchronized String[] persistPayer(Payment payment)
+			throws SQLException {
 
 		String[] arrayLastID = { null, null };
 		long lastPayerId;
@@ -69,7 +71,8 @@ public class PaymentDBSaver implements Runnable {
 
 	}
 
-	private String[] persistRecipient(Payment payment) throws SQLException {
+	private synchronized String[] persistRecipient(Payment payment)
+			throws SQLException {
 
 		String[] arrayLastID = { null, null };
 		long lastRecipientId;
@@ -93,7 +96,7 @@ public class PaymentDBSaver implements Runnable {
 		return null;
 	}
 
-	private void persistAll() {
+	private synchronized void persistAll() {
 
 		while (true) {
 			try {
@@ -114,8 +117,9 @@ public class PaymentDBSaver implements Runnable {
 		}
 	}
 
-	private void persistPayment(Details details, String[] lastPayerID,
-			String[] lastRecipientID, long lastDetailID) throws SQLException {
+	private synchronized void persistPayment(Details details,
+			String[] lastPayerID, String[] lastRecipientID, long lastDetailID)
+			throws SQLException {
 
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -154,7 +158,8 @@ public class PaymentDBSaver implements Runnable {
 		}
 	}
 
-	private long persistDetails(Details details) throws SQLException {
+	private synchronized long persistDetails(Details details)
+			throws SQLException {
 
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -205,7 +210,7 @@ public class PaymentDBSaver implements Runnable {
 
 	}
 
-	private long getLastInsertId(PreparedStatement statement)
+	private synchronized long getLastInsertId(PreparedStatement statement)
 			throws SQLException {
 
 		ResultSet generatedKeys = statement.getGeneratedKeys();
@@ -219,7 +224,8 @@ public class PaymentDBSaver implements Runnable {
 
 	}
 
-	private long persistLegal(Legal legal, String table) throws SQLException {
+	private synchronized long persistLegal(Legal legal, String table)
+			throws SQLException {
 
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
@@ -241,7 +247,7 @@ public class PaymentDBSaver implements Runnable {
 			preparedStatement.executeUpdate();
 
 			long lastInsertID = getLastInsertId(preparedStatement);
-			logger.debug("Last insert LEGAL ID = {}", lastInsertID);
+			logger.debug("Last insert {} ID = {}", table, lastInsertID);
 			return lastInsertID;
 
 		} catch (SQLException e) {
@@ -262,7 +268,7 @@ public class PaymentDBSaver implements Runnable {
 		return -1;
 	}
 
-	private long persistPhysical(Physical physical, String table)
+	private synchronized long persistPhysical(Physical physical, String table)
 			throws SQLException {
 
 		Connection connection = null;
@@ -289,7 +295,7 @@ public class PaymentDBSaver implements Runnable {
 			preparedStatement.executeUpdate();
 
 			long lastInsertID = getLastInsertId(preparedStatement);
-			logger.debug("Last insert LEGAL ID = {}", lastInsertID);
+			logger.debug("Last insert {} ID = {}", table, lastInsertID);
 			return lastInsertID;
 
 		} catch (SQLException e) {

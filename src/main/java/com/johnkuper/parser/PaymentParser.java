@@ -63,9 +63,11 @@ public class PaymentParser implements Runnable {
 								.equals("payment")) {
 					Payment payment = getPayment(xmlreader);
 					paymentStorage.put(payment);
-					logger.debug(payment.getPayer().toString());
-					logger.debug(payment.getRecipient().toString());
-					logger.debug(payment.getDetails().toString());
+					/*
+					 * logger.debug(payment.getPayer().toString());
+					 * logger.debug(payment.getRecipient().toString());
+					 * logger.debug(payment.getDetails().toString());
+					 */
 				} else {
 					xmlreader.nextEvent();
 				}
