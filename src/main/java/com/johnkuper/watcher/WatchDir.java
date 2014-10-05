@@ -46,7 +46,7 @@ public class WatchDir implements Runnable {
 		if (trace) {
 			Path prev = keys.get(key);
 			if (prev == null) {
-				System.out.format("register: %s\n", dir);
+				logger.debug("Directory register for Watcher: {}\n", dir);
 			} else {
 				if (!dir.equals(prev)) {
 					System.out.format("update: %s -> %s\n", prev, dir);
@@ -74,7 +74,6 @@ public class WatchDir implements Runnable {
 
 		while (true) {
 
-			// wait for key to be signalled
 			WatchKey key;
 			try {
 				key = watcher.take();
@@ -96,20 +95,17 @@ public class WatchDir implements Runnable {
 					continue;
 				}
 
-				// Context for directory entry event is the file name of entry
 				WatchEvent<Path> ev = cast(event);
 				Path name = ev.context();
 				Path fullpath = dir.resolve(name);
 				if (kind == ENTRY_CREATE) {
 					putPathToStorage(fullpath);
 					logger.debug("Fullpath '{}' add in pathStorage", fullpath);
-					// checkPathStorage(pathStorage);
 					System.out.format("%s: %s\n", event.kind().name(), name);
 				}
 
 			}
 
-			// reset key and remove from set if directory no longer accessible
 			boolean valid = key.reset();
 			if (!valid) {
 				keys.remove(key);

@@ -48,7 +48,7 @@ public class PaymentParser implements Runnable {
 
 	}
 
-	public void parse() throws XMLStreamException, InterruptedException {
+	private void parse() throws XMLStreamException, InterruptedException {
 
 		XMLInputFactory xif = XMLInputFactory.newFactory();
 		XMLEventReader xmlreader = null;

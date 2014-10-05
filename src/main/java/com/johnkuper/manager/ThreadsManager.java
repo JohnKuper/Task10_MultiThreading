@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.johnkuper.database.IConnectionProvider;
-import com.johnkuper.database.PaymentDBSaver;
+import com.johnkuper.database.DBSaver;
 import com.johnkuper.model.Payment;
 import com.johnkuper.parser.PaymentParser;
 import com.johnkuper.remover.FileRemover;
@@ -40,6 +40,14 @@ public class ThreadsManager {
 		this.executor = executor;
 	}
 
+	public void startAllTasks() {
+		runWatcher();
+		runFileRemover();
+		runSaver();
+		runParser();
+
+	}
+
 	private void runWatcher() {
 		logger.debug("Start 'runWatcher'");
 
@@ -53,19 +61,11 @@ public class ThreadsManager {
 
 	}
 
-	public void startAllTasks() {
-		runWatcher();
-		runFileRemover();
-		runSaver();
-		runParser();
-
-	}
-
 	private void runSaver() {
 		logger.debug("Start 'runSaver'");
 		int x;
 		for (x = 0; x < SAVER_THREADS_AMOUNT; x++) {
-			executor.submit(new PaymentDBSaver(paymentStorage, provider));
+			executor.submit(new DBSaver(paymentStorage, provider));
 		}
 	}
 

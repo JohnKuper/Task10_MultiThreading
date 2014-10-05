@@ -22,14 +22,14 @@ import com.johnkuper.model.PhysicalPayer;
 import com.johnkuper.model.PhysicalRecipient;
 import com.johnkuper.storage.Storage;
 
-public class PaymentDBSaver implements Runnable {
+public class DBSaver implements Runnable {
 
 	final static Logger logger = LoggerFactory.getLogger("JohnKuper");
 
 	private Storage<Payment> paymentStorage;
 	private IConnectionProvider provider;
 
-	public PaymentDBSaver(Storage<Payment> storage, IConnectionProvider provider) {
+	public DBSaver(Storage<Payment> storage, IConnectionProvider provider) {
 		this.paymentStorage = storage;
 		this.provider = provider;
 
@@ -39,6 +39,27 @@ public class PaymentDBSaver implements Runnable {
 	public void run() {
 		logger.debug("Start 'DBSaver' thread");
 		persistAll();
+	}
+
+	private void persistAll() {
+
+		while (true) {
+			try {
+				Payment payment = paymentStorage.get();
+
+				String[] lastPayerID = persistPayer(payment);
+				String[] lastRecipientID = persistRecipient(payment);
+				long lastDetailID = persistDetails(payment.getDetails());
+				persistPayment(payment.getDetails(), lastPayerID,
+						lastRecipientID, lastDetailID);
+
+			} catch (InterruptedException e) {
+				logger.error("PaymentDBSaver thread was interrupted", e);
+
+			} catch (SQLException e) {
+				logger.error("SQL error during 'persistPayment'", e);
+			}
+		}
 	}
 
 	private java.sql.Date convertToSQLDate(XMLGregorianCalendar calendar) {
@@ -94,27 +115,6 @@ public class PaymentDBSaver implements Runnable {
 		return null;
 	}
 
-	private void persistAll() {
-
-		while (true) {
-			try {
-				Payment payment = paymentStorage.get();
-
-				String[] lastPayerID = persistPayer(payment);
-				String[] lastRecipientID = persistRecipient(payment);
-				long lastDetailID = persistDetails(payment.getDetails());
-				persistPayment(payment.getDetails(), lastPayerID,
-						lastRecipientID, lastDetailID);
-
-			} catch (InterruptedException e) {
-				logger.error("PaymentDBSaver thread was interrupted", e);
-
-			} catch (SQLException e) {
-				logger.error("SQL error during 'persistPayment'", e);
-			}
-		}
-	}
-
 	private void persistPayment(Details details, String[] lastPayerID,
 			String[] lastRecipientID, long lastDetailID) throws SQLException {
 
@@ -139,8 +139,14 @@ public class PaymentDBSaver implements Runnable {
 			preparedStatement.executeUpdate();
 
 		} catch (SQLException e) {
+			if (e.getSQLState().equals(IConnectionProvider.DUPLICATE_STATE)) {
+				logger.warn("Duplicate entry. Keep working");
+				return;
+			} else {
+				logger.error("SQL error during 'persistDetails'", e);
+				throw e;
 
-			logger.error("SQL error during 'persistDetails'", e);
+			}
 
 		} finally {
 
@@ -184,13 +190,17 @@ public class PaymentDBSaver implements Runnable {
 			preparedStatement.executeUpdate();
 
 			long lastInsertID = getLastInsertId(preparedStatement);
-			logger.debug("Last insert DETAILS ID = {}", lastInsertID);
 			return lastInsertID;
 
 		} catch (SQLException e) {
+			if (e.getSQLState().equals(IConnectionProvider.DUPLICATE_STATE)) {
+				logger.warn("Duplicate entry. Keep working");
+				return -1;
+			} else {
+				logger.error("SQL error during 'persistDetails'", e);
+				throw e;
 
-			logger.error("SQL error during 'persistDetails'", e);
-
+			}
 		} finally {
 
 			if (preparedStatement != null) {
@@ -202,7 +212,6 @@ public class PaymentDBSaver implements Runnable {
 			}
 
 		}
-		return -1;
 
 	}
 
@@ -242,13 +251,17 @@ public class PaymentDBSaver implements Runnable {
 			preparedStatement.executeUpdate();
 
 			long lastInsertID = getLastInsertId(preparedStatement);
-			logger.debug("Last insert {} ID = {}", table, lastInsertID);
 			return lastInsertID;
 
 		} catch (SQLException e) {
+			if (e.getSQLState().equals(IConnectionProvider.DUPLICATE_STATE)) {
+				logger.warn("Duplicate entry. Keep working");
+				return -1;
+			} else {
+				logger.error("SQL error during 'persistDetails'", e);
+				throw e;
 
-			logger.error("SQL error during 'persistLegal'", e);
-
+			}
 		} finally {
 
 			if (preparedStatement != null) {
@@ -260,7 +273,6 @@ public class PaymentDBSaver implements Runnable {
 			}
 
 		}
-		return -1;
 	}
 
 	private long persistPhysical(Physical physical, String table)
@@ -290,13 +302,17 @@ public class PaymentDBSaver implements Runnable {
 			preparedStatement.executeUpdate();
 
 			long lastInsertID = getLastInsertId(preparedStatement);
-			logger.debug("Last insert {} ID = {}", table, lastInsertID);
 			return lastInsertID;
 
 		} catch (SQLException e) {
+			if (e.getSQLState().equals(IConnectionProvider.DUPLICATE_STATE)) {
+				logger.warn("Duplicate entry. Keep working");
+				return -1;
+			} else {
+				logger.error("SQL error during 'persistDetails'", e);
+				throw e;
 
-			logger.error("SQL error during 'persistPhysical'", e);
-
+			}
 		} finally {
 
 			if (preparedStatement != null) {
@@ -309,6 +325,5 @@ public class PaymentDBSaver implements Runnable {
 
 		}
 
-		return -1;
 	}
 }

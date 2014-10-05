@@ -14,12 +14,17 @@ public class Main {
 	final static Logger logger = LoggerFactory.getLogger("JohnKuper");
 
 	public static void main(String[] args) {
+		
+		XMLGenerator generator = new XMLGenerator();
+		generator.generate(10, 10);
 
 		ComboPooledDataSourceProvider poolProvider = new ComboPooledDataSourceProvider();
 		ExecutorService executor = Executors.newCachedThreadPool();
 		ThreadsManager thrManager = new ThreadsManager(poolProvider, executor);
 
 		thrManager.startAllTasks();
+
+		
 
 	}
 
