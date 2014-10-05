@@ -28,11 +28,13 @@ public class PaymentDBSaver implements Runnable {
 
 	private Storage<Payment> paymentStorage;
 	private IConnectionProvider provider;
+	private Connection connection;
 
 	public PaymentDBSaver(Storage<Payment> storage, IConnectionProvider provider) {
 		this.paymentStorage = storage;
 		this.provider = provider;
-		
+		this.connection = provider.getConnection();
+
 	}
 
 	@Override
@@ -47,8 +49,7 @@ public class PaymentDBSaver implements Runnable {
 		return sqlDt;
 	}
 
-	private synchronized String[] persistPayer(Payment payment)
-			throws SQLException {
+	private String[] persistPayer(Payment payment) throws SQLException {
 
 		String[] arrayLastID = { null, null };
 		long lastPayerId;
@@ -71,8 +72,7 @@ public class PaymentDBSaver implements Runnable {
 
 	}
 
-	private synchronized String[] persistRecipient(Payment payment)
-			throws SQLException {
+	private String[] persistRecipient(Payment payment) throws SQLException {
 
 		String[] arrayLastID = { null, null };
 		long lastRecipientId;
@@ -96,7 +96,7 @@ public class PaymentDBSaver implements Runnable {
 		return null;
 	}
 
-	private synchronized void persistAll() {
+	private void persistAll() {
 
 		while (true) {
 			try {
@@ -117,100 +117,58 @@ public class PaymentDBSaver implements Runnable {
 		}
 	}
 
-	private synchronized void persistPayment(Details details,
-			String[] lastPayerID, String[] lastRecipientID, long lastDetailID)
-			throws SQLException {
+	private void persistPayment(Details details, String[] lastPayerID,
+			String[] lastRecipientID, long lastDetailID) throws SQLException {
 
-		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 
 		String insertSQL = "INSERT INTO payments"
 				+ "(id_physical_payer,id_legal_payer,id_physical_recipient,id_legal_recipient,id_detail,payment_code) VALUES"
 				+ "(?,?,?,?,?,?)";
 
-		try {
-			connection = provider.getConnection();
-			preparedStatement = connection.prepareStatement(insertSQL);
+		preparedStatement = connection.prepareStatement(insertSQL);
 
-			preparedStatement.setString(1, lastPayerID[0]);
-			preparedStatement.setString(2, lastPayerID[1]);
-			preparedStatement.setString(3, lastRecipientID[0]);
-			preparedStatement.setString(4, lastRecipientID[1]);
-			preparedStatement.setString(5, String.valueOf(lastDetailID));
-			preparedStatement.setString(6, details.getPaymentCode());
+		preparedStatement.setString(1, lastPayerID[0]);
+		preparedStatement.setString(2, lastPayerID[1]);
+		preparedStatement.setString(3, lastRecipientID[0]);
+		preparedStatement.setString(4, lastRecipientID[1]);
+		preparedStatement.setString(5, String.valueOf(lastDetailID));
+		preparedStatement.setString(6, details.getPaymentCode());
 
-			preparedStatement.executeUpdate();
+		preparedStatement.executeUpdate();
 
-		} catch (SQLException e) {
-
-			logger.error("SQL error during 'persistDetails'", e);
-
-		} finally {
-
-			if (preparedStatement != null) {
-				preparedStatement.close();
-			}
-
-			if (connection != null) {
-				connection.close();
-			}
-
-		}
 	}
 
-	private synchronized long persistDetails(Details details)
-			throws SQLException {
+	private long persistDetails(Details details) throws SQLException {
 
-		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 
 		String insertSQL = "INSERT INTO payment_details"
 				+ "(bank_BIC,bank_name,total,date_of_payment,date_of_execution) VALUES"
 				+ "(?,?,?,?,?)";
 
-		try {
+		preparedStatement = connection.prepareStatement(insertSQL,
+				Statement.RETURN_GENERATED_KEYS);
 
-			connection = provider.getConnection();
-			preparedStatement = connection.prepareStatement(insertSQL,
-					Statement.RETURN_GENERATED_KEYS);
+		preparedStatement.setString(1, details.getBankBIC());
+		preparedStatement.setString(2, details.getBankName());
+		preparedStatement.setBigDecimal(3, details.getTotal());
 
-			preparedStatement.setString(1, details.getBankBIC());
-			preparedStatement.setString(2, details.getBankName());
-			preparedStatement.setBigDecimal(3, details.getTotal());
+		Date dateOfPayment = convertToSQLDate(details.getDateOfPayment());
+		preparedStatement.setDate(4, dateOfPayment);
 
-			Date dateOfPayment = convertToSQLDate(details.getDateOfPayment());
-			preparedStatement.setDate(4, dateOfPayment);
+		Date dateOfExecution = convertToSQLDate(details.getDateOfExecution());
+		preparedStatement.setDate(5, dateOfExecution);
 
-			Date dateOfExecution = convertToSQLDate(details
-					.getDateOfExecution());
-			preparedStatement.setDate(5, dateOfExecution);
+		preparedStatement.executeUpdate();
 
-			preparedStatement.executeUpdate();
-
-			long lastInsertID = getLastInsertId(preparedStatement);
-			logger.debug("Last insert DETAILS ID = {}", lastInsertID);
-			return lastInsertID;
-
-		} catch (SQLException e) {
-
-			logger.error("SQL error during 'persistDetails'", e);
-
-		} finally {
-
-			if (preparedStatement != null) {
-				preparedStatement.close();
-			}
-
-			if (connection != null) {
-				connection.close();
-			}
-
-		}
-		return -1;
+		long lastInsertID = getLastInsertId(preparedStatement);
+		logger.debug("Last insert DETAILS ID = {}", lastInsertID);
+		return lastInsertID;
 
 	}
 
-	private synchronized long getLastInsertId(PreparedStatement statement)
+	private long getLastInsertId(PreparedStatement statement)
 			throws SQLException {
 
 		ResultSet generatedKeys = statement.getGeneratedKeys();
@@ -224,54 +182,33 @@ public class PaymentDBSaver implements Runnable {
 
 	}
 
-	private synchronized long persistLegal(Legal legal, String table)
-			throws SQLException {
+	private long persistLegal(Legal legal, String table) throws SQLException {
 
-		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 
 		String insertSQL = "INSERT INTO " + table
 				+ "(bank_account,TIN,company_name,company_address) VALUES"
 				+ "(?,?,?,?)";
 
-		try {
-			connection = provider.getConnection();
-			preparedStatement = connection.prepareStatement(insertSQL,
-					Statement.RETURN_GENERATED_KEYS);
+		preparedStatement = connection.prepareStatement(insertSQL,
+				Statement.RETURN_GENERATED_KEYS);
 
-			preparedStatement.setString(1, legal.getBankAccount());
-			preparedStatement.setString(2, legal.getTIN());
-			preparedStatement.setString(3, legal.getCompanyName());
-			preparedStatement.setString(4, legal.getCompanyAddress());
+		preparedStatement.setString(1, legal.getBankAccount());
+		preparedStatement.setString(2, legal.getTIN());
+		preparedStatement.setString(3, legal.getCompanyName());
+		preparedStatement.setString(4, legal.getCompanyAddress());
 
-			preparedStatement.executeUpdate();
+		preparedStatement.executeUpdate();
 
-			long lastInsertID = getLastInsertId(preparedStatement);
-			logger.debug("Last insert {} ID = {}", table, lastInsertID);
-			return lastInsertID;
+		long lastInsertID = getLastInsertId(preparedStatement);
+		logger.debug("Last insert {} ID = {}", table, lastInsertID);
+		return lastInsertID;
 
-		} catch (SQLException e) {
-
-			logger.error("SQL error during 'persistLegal'", e);
-
-		} finally {
-
-			if (preparedStatement != null) {
-				preparedStatement.close();
-			}
-
-			if (connection != null) {
-				connection.close();
-			}
-
-		}
-		return -1;
 	}
 
-	private synchronized long persistPhysical(Physical physical, String table)
+	private long persistPhysical(Physical physical, String table)
 			throws SQLException {
 
-		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 
 		String insertSQL = "INSERT INTO "
@@ -279,8 +216,7 @@ public class PaymentDBSaver implements Runnable {
 				+ "(bank_account,name,surname,patronymic,passport_series,passport_number,phone) VALUES"
 				+ "(?,?,?,?,?,?,?)";
 
-		try {
-			connection = provider.getConnection();
+		
 			preparedStatement = connection.prepareStatement(insertSQL,
 					Statement.RETURN_GENERATED_KEYS);
 
@@ -298,22 +234,7 @@ public class PaymentDBSaver implements Runnable {
 			logger.debug("Last insert {} ID = {}", table, lastInsertID);
 			return lastInsertID;
 
-		} catch (SQLException e) {
+		
 
-			logger.error("SQL error during 'persistPhysical'", e);
-
-		} finally {
-
-			if (preparedStatement != null) {
-				preparedStatement.close();
-			}
-
-			if (connection != null) {
-				connection.close();
-			}
-
-		}
-
-		return -1;
 	}
 }
